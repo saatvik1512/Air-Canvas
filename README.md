@@ -48,6 +48,9 @@ python app.py
 
 6. To save the canvas drawing, press the "S" key while the application is running.
 
+## Contribution
+Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
+
 ## Acknowledgement
 
 - Shri Ram Institute of Technology
