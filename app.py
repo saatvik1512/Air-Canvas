@@ -4,19 +4,19 @@ import mediapipe as mp
 from collections import deque
 import os
 
-# Initialize deque arrays to handle color points
-bpoints = [deque(maxlen=1024)]
-gpoints = [deque(maxlen=1024)]
-rpoints = [deque(maxlen=1024)]
-ypoints = [deque(maxlen=1024)]
-ppoints = [deque(maxlen=1024)]
+# Initialize deque arrays to handle color points for both hands
+bpoints1, bpoints2 = [deque(maxlen=1024)], [deque(maxlen=1024)]
+gpoints1, gpoints2 = [deque(maxlen=1024)], [deque(maxlen=1024)]
+rpoints1, rpoints2 = [deque(maxlen=1024)], [deque(maxlen=1024)]
+ypoints1, ypoints2 = [deque(maxlen=1024)], [deque(maxlen=1024)]
+ppoints1, ppoints2 = [deque(maxlen=1024)], [deque(maxlen=1024)]
 
-# Indexes for points in particular arrays of specific color
-blue_index = 0
-green_index = 0
-red_index = 0
-yellow_index = 0
-pink_index = 0
+# Indexes for points in particular arrays of specific color for both hands
+blue_index1, blue_index2 = 0, 0
+green_index1, green_index2 = 0, 0
+red_index1, red_index2 = 0, 0
+yellow_index1, yellow_index2 = 0, 0
+pink_index1, pink_index2 = 0, 0
 
 # Kernel for dilation purpose
 kernel = np.ones((5, 5), np.uint8)
@@ -43,7 +43,7 @@ cv2.namedWindow('Paint', cv2.WINDOW_AUTOSIZE)
 
 # Initialize mediapipe
 mpHands = mp.solutions.hands
-hands = mpHands.Hands(max_num_hands=1, min_detection_confidence=0.7)
+hands = mpHands.Hands(max_num_hands=2, min_detection_confidence=0.7)
 mpDraw = mp.solutions.drawing_utils
 
 # Initialize the webcam
@@ -83,8 +83,8 @@ while ret:
 
     # Post process the result
     if result.multi_hand_landmarks:
-        landmarks = []
-        for handslms in result.multi_hand_landmarks:
+        for hand_no, handslms in enumerate(result.multi_hand_landmarks):
+            landmarks = []
             for lm in handslms.landmark:
                 lmx = int(lm.x * 640)
                 lmy = int(lm.y * 480)
@@ -92,73 +92,106 @@ while ret:
 
             # Drawing landmarks on frames
             mpDraw.draw_landmarks(frame, handslms, mpHands.HAND_CONNECTIONS)
-        fore_finger = (landmarks[8][0], landmarks[8][1])
-        center = fore_finger
-        thumb = (landmarks[4][0], landmarks[4][1])
-        cv2.circle(frame, center, 3, (0, 255, 0), -1)
+            fore_finger = (landmarks[8][0], landmarks[8][1])
+            center = fore_finger
+            thumb = (landmarks[4][0], landmarks[4][1])
+            cv2.circle(frame, center, 3, (0, 255, 0), -1)
 
-        if (thumb[1] - center[1] < 30):
-            # Save the current state before starting a new stroke
-            undo_stack.append((bpoints.copy(), gpoints.copy(), rpoints.copy(), ypoints.copy(), ppoints.copy(),
-                               blue_index, green_index, red_index, yellow_index, pink_index))
+            if (thumb[1] - center[1] < 30):
+                # Save the current state before starting a new stroke
+                if hand_no == 0:
+                    undo_stack.append((bpoints1.copy(), gpoints1.copy(), rpoints1.copy(), ypoints1.copy(), ppoints1.copy(),
+                                       blue_index1, green_index1, red_index1, yellow_index1, pink_index1))
 
-            bpoints.append(deque(maxlen=512))
-            blue_index += 1
-            gpoints.append(deque(maxlen=512))
-            green_index += 1
-            rpoints.append(deque(maxlen=512))
-            red_index += 1
-            ypoints.append(deque(maxlen=512))
-            yellow_index += 1
-            ppoints.append(deque(maxlen=512))
-            pink_index += 1
+                    bpoints1.append(deque(maxlen=512))
+                    blue_index1 += 1
+                    gpoints1.append(deque(maxlen=512))
+                    green_index1 += 1
+                    rpoints1.append(deque(maxlen=512))
+                    red_index1 += 1
+                    ypoints1.append(deque(maxlen=512))
+                    yellow_index1 += 1
+                    ppoints1.append(deque(maxlen=512))
+                    pink_index1 += 1
+                else:
+                    undo_stack.append((bpoints2.copy(), gpoints2.copy(), rpoints2.copy(), ypoints2.copy(), ppoints2.copy(),
+                                       blue_index2, green_index2, red_index2, yellow_index2, pink_index2))
 
-        elif center[1] <= 65:
-            if 40 <= center[0] <= 140:  # Clear Button
-                bpoints = [deque(maxlen=512)]
-                gpoints = [deque(maxlen=512)]
-                rpoints = [deque(maxlen=512)]
-                ypoints = [deque(maxlen=512)]
-                ppoints = [deque(maxlen=512)]
+                    bpoints2.append(deque(maxlen=512))
+                    blue_index2 += 1
+                    gpoints2.append(deque(maxlen=512))
+                    green_index2 += 1
+                    rpoints2.append(deque(maxlen=512))
+                    red_index2 += 1
+                    ypoints2.append(deque(maxlen=512))
+                    yellow_index2 += 1
+                    ppoints2.append(deque(maxlen=512))
+                    pink_index2 += 1
 
-                blue_index = 0
-                green_index = 0
-                red_index = 0
-                yellow_index = 0
-                pink_index = 0
+            if center[1] <= 65:
+                if 40 <= center[0] <= 140:
+                    bpoints1, gpoints1, rpoints1, ypoints1, ppoints1 = [deque(maxlen=512)], [deque(maxlen=512)], [deque(maxlen=512)], [deque(maxlen=512)], [deque(maxlen=512)]
+                    blue_index1, green_index1, red_index1, yellow_index1, pink_index1 = 0, 0, 0, 0, 0
 
-                paintWindow[67:, :, :] = 255
-            elif 160 <= center[0] <= 255:
-                colorIndex = 0  # Blue
-            elif 275 <= center[0] <= 370:
-                colorIndex = 1  # Green
-            elif 390 <= center[0] <= 485:
-                colorIndex = 2  # Red
-            elif 505 <= center[0] <= 600:
-                colorIndex = 3  # Yellow
-            elif 615 <= center[0] <= 710:
-                colorIndex = 4  # Pink
-        else:
-            if colorIndex == 0:
-                bpoints[blue_index].appendleft(center)
-            elif colorIndex == 1:
-                gpoints[green_index].appendleft(center)
-            elif colorIndex == 2:
-                rpoints[red_index].appendleft(center)
-            elif colorIndex == 3:
-                ypoints[yellow_index].appendleft(center)
-            elif colorIndex == 4:
-                ppoints[pink_index].appendleft(center)
+                    bpoints2, gpoints2, rpoints2, ypoints2, ppoints2 = [deque(maxlen=512)], [deque(maxlen=512)], [deque(maxlen=512)], [deque(maxlen=512)], [deque(maxlen=512)]
+                    blue_index2, green_index2, red_index2, yellow_index2, pink_index2 = 0, 0, 0, 0, 0
+                    paintWindow[67:, :, :] = 255
+                elif 160 <= center[0] <= 255:
+                    colorIndex = 0  # Blue
+                elif 275 <= center[0] <= 370:
+                    colorIndex = 1  # Green
+                elif 390 <= center[0] <= 485:
+                    colorIndex = 2  # Red
+                elif 505 <= center[0] <= 600:
+                    colorIndex = 3  # Yellow
+                elif 615 <= center[0] <= 710:
+                    colorIndex = 4  # Pink
+            else:
+                if colorIndex == 0:
+                    if hand_no == 0:
+                        bpoints1[blue_index1].appendleft(center)
+                    else:
+                        bpoints2[blue_index2].appendleft(center)
+                elif colorIndex == 1:
+                    if hand_no == 0:
+                        gpoints1[green_index1].appendleft(center)
+                    else:
+                        gpoints2[green_index2].appendleft(center)
+                elif colorIndex == 2:
+                    if hand_no == 0:
+                        rpoints1[red_index1].appendleft(center)
+                    else:
+                        rpoints2[red_index2].appendleft(center)
+                elif colorIndex == 3:
+                    if hand_no == 0:
+                        ypoints1[yellow_index1].appendleft(center)
+                    else:
+                        ypoints2[yellow_index2].appendleft(center)
+                elif colorIndex == 4:
+                    if hand_no == 0:
+                        ppoints1[pink_index1].appendleft(center)
+                    else:
+                        ppoints2[pink_index2].appendleft(center)
 
     # Draw lines of all the colors on the canvas and frame
-    points = [bpoints, gpoints, rpoints, ypoints, ppoints]
-    for i in range(len(points)):
-        for j in range(len(points[i])):
-            for k in range(1, len(points[i][j])):
-                if points[i][j][k - 1] is None or points[i][j][k] is None:
+    points1 = [bpoints1, gpoints1, rpoints1, ypoints1, ppoints1]
+    points2 = [bpoints2, gpoints2, rpoints2, ypoints2, ppoints2]
+
+    for i in range(len(points1)):
+        for j in range(len(points1[i])):
+            for k in range(1, len(points1[i][j])):
+                if points1[i][j][k - 1] is None or points1[i][j][k] is None:
                     continue
-                cv2.line(frame, points[i][j][k - 1], points[i][j][k], colors[i], brush_size)
-                cv2.line(paintWindow, points[i][j][k - 1], points[i][j][k], colors[i], brush_size)
+                cv2.line(frame, points1[i][j][k - 1], points1[i][j][k], colors[i], brush_size)
+                cv2.line(paintWindow, points1[i][j][k - 1], points1[i][j][k], colors[i], brush_size)
+                
+    for i in range(len(points2)):
+        for j in range(len(points2[i])):
+            for k in range(1, len(points2[i][j])):
+                if points2[i][j][k - 1] is None or points2[i][j][k] is None:
+                    continue
+                cv2.line(frame, points2[i][j][k - 1], points2[i][j][k], colors[i], brush_size)
+                cv2.line(paintWindow, points2[i][j][k - 1], points2[i][j][k], colors[i], brush_size)
 
     cv2.imshow("Output", frame)
     cv2.imshow("Paint", paintWindow)
@@ -178,20 +211,27 @@ while ret:
         break
     elif key == ord('u') or key == ord('U'):
         if undo_stack:
-            bpoints, gpoints, rpoints, ypoints, ppoints, blue_index, green_index, red_index, yellow_index, pink_index = undo_stack.pop()
+            bpoints1, gpoints1, rpoints1, ypoints1, ppoints1, blue_index1, green_index1, red_index1, yellow_index1, pink_index1 = undo_stack.pop()
+            bpoints2, gpoints2, rpoints2, ypoints2, ppoints2, blue_index2, green_index2, red_index2, yellow_index2, pink_index2 = undo_stack.pop()
             paintWindow[67:, :, :] = 255  # Clear the canvas area
             # Redraw the canvas based on the current points
-            for i in range(len(points)):
-                for j in range(len(points[i])):
-                    for k in range(1, len(points[i][j])):
-                        if points[i][j][k - 1] is None or points[i][j][k] is None:
+            for i in range(len(points1)):
+                for j in range(len(points1[i])):
+                    for k in range(1, len(points1[i][j])):
+                        if points1[i][j][k - 1] is None or points1[i][j][k] is None:
                             continue
-                        cv2.line(paintWindow, points[i][j][k - 1], points[i][j][k], colors[i], brush_size)
+                        cv2.line(paintWindow, points1[i][j][k - 1], points1[i][j][k], colors[i], brush_size)
+            for i in range(len(points2)):
+                for j in range(len(points2[i])):
+                    for k in range(1, len(points2[i][j])):
+                        if points2[i][j][k - 1] is None or points2[i][j][k] is None:
+                            continue
+                        cv2.line(paintWindow, points2[i][j][k - 1], points2[i][j][k], colors[i], brush_size)
     elif key == ord('+'):
         brush_size = min(20, brush_size + 1)  # Cap the brush size to 20
     elif key == ord('-'):
         brush_size = max(1, brush_size - 1)  # Minimum brush size is 1
 
-# release the webcam and destroy all active windows
+# Release the webcam and destroy all active windows
 cap.release()
 cv2.destroyAllWindows()
