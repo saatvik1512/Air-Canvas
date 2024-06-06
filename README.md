@@ -22,3 +22,8 @@ Air Canvas is a computer vision-based application that allows users to draw on a
 
 ```bash
 git clone https://github.com/your-repo/air-canvas.git
+
+2. Install the required dependencies:
+
+```bash
+pip install opencv-python mediapipe numpy
