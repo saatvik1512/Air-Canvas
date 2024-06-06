@@ -21,7 +21,7 @@ Air Canvas is a computer vision-based application that allows users to draw on a
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-repo/air-canvas.git
+git clone https://github.com/saatvik1512/Air-Canvas.git
 ```
 
 2. Install the required dependencies:
@@ -37,7 +37,7 @@ pip install opencv-python mediapipe numpy
 2. Run the Python script:
 
 ```bash
-python air_canvas.py
+python app.py
 ```
 
 3. The application window will open, displaying the webcam feed and the virtual canvas.
@@ -47,3 +47,7 @@ python air_canvas.py
 5. To clear the canvas, hover your finger over the "CLEAR" button on the canvas.
 
 6. To save the canvas drawing, press the "S" key while the application is running.
+
+## Acknowledgement
+
+- Shri Ram Institute of Technology
