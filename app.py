@@ -22,7 +22,8 @@ pink_index1, pink_index2 = 0, 0
 kernel = np.ones((5, 5), np.uint8)
 
 colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (0, 255, 255), (255, 192, 203)]
-colorIndex = 0
+colorIndex1 = 0
+colorIndex2 = 0
 
 # Canvas setup
 paintWindow = np.zeros((471, 636, 3)) + 255
@@ -137,41 +138,56 @@ while ret:
                     blue_index2, green_index2, red_index2, yellow_index2, pink_index2 = 0, 0, 0, 0, 0
                     paintWindow[67:, :, :] = 255
                 elif 160 <= center[0] <= 255:
-                    colorIndex = 0  # Blue
+                    if hand_no == 0:
+                        colorIndex1 = 0  # Blue
+                    else:
+                        colorIndex2 = 0  # Blue
                 elif 275 <= center[0] <= 370:
-                    colorIndex = 1  # Green
+                    if hand_no == 0:
+                        colorIndex1 = 1  # Green
+                    else:
+                        colorIndex2 = 1  # Green
                 elif 390 <= center[0] <= 485:
-                    colorIndex = 2  # Red
+                    if hand_no == 0:
+                        colorIndex1 = 2  # Red
+                    else:
+                        colorIndex2 = 2  # Red
                 elif 505 <= center[0] <= 600:
-                    colorIndex = 3  # Yellow
+                    if hand_no == 0:
+                        colorIndex1 = 3  # Yellow
+                    else:
+                        colorIndex2 = 3  # Yellow
                 elif 615 <= center[0] <= 710:
-                    colorIndex = 4  # Pink
+                    if hand_no == 0:
+                        colorIndex1 = 4  # Pink
+                    else:
+                        colorIndex2 = 4  # Pink
             else:
-                if colorIndex == 0:
-                    if hand_no == 0:
+                if hand_no == 0:
+                    if colorIndex1 == 0:
                         bpoints1[blue_index1].appendleft(center)
-                    else:
-                        bpoints2[blue_index2].appendleft(center)
-                elif colorIndex == 1:
-                    if hand_no == 0:
+                    elif colorIndex1 == 1:
                         gpoints1[green_index1].appendleft(center)
-                    else:
-                        gpoints2[green_index2].appendleft(center)
-                elif colorIndex == 2:
-                    if hand_no == 0:
+                    elif colorIndex1 == 2:
                         rpoints1[red_index1].appendleft(center)
-                    else:
-                        rpoints2[red_index2].appendleft(center)
-                elif colorIndex == 3:
-                    if hand_no == 0:
+                    elif colorIndex1 == 3:
                         ypoints1[yellow_index1].appendleft(center)
-                    else:
-                        ypoints2[yellow_index2].appendleft(center)
-                elif colorIndex == 4:
-                    if hand_no == 0:
+                    elif colorIndex1 == 4:
                         ppoints1[pink_index1].appendleft(center)
-                    else:
+                else:
+                    if colorIndex2 == 0:
+                        bpoints2[blue_index2].appendleft(center)
+                    elif colorIndex2 == 1:
+                        gpoints2[green_index2].appendleft(center)
+                    elif colorIndex2 == 2:
+                        rpoints2[red_index2].appendleft(center)
+                    elif colorIndex2 == 3:
+                        ypoints2[yellow_index2].appendleft(center)
+                    elif colorIndex2 == 4:
                         ppoints2[pink_index2].appendleft(center)
+    else:
+        hand1_present = False
+        hand2_present = False
 
     # Draw lines of all the colors on the canvas and frame
     points1 = [bpoints1, gpoints1, rpoints1, ypoints1, ppoints1]
@@ -184,7 +200,7 @@ while ret:
                     continue
                 cv2.line(frame, points1[i][j][k - 1], points1[i][j][k], colors[i], brush_size)
                 cv2.line(paintWindow, points1[i][j][k - 1], points1[i][j][k], colors[i], brush_size)
-                
+
     for i in range(len(points2)):
         for j in range(len(points2[i])):
             for k in range(1, len(points2[i][j])):
