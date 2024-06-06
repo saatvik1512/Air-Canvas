@@ -22,8 +22,28 @@ Air Canvas is a computer vision-based application that allows users to draw on a
 
 ```bash
 git clone https://github.com/your-repo/air-canvas.git
+```
 
 2. Install the required dependencies:
 
 ```bash
 pip install opencv-python mediapipe numpy
+```
+
+## Usage
+
+1. Navigate to the project directory.
+
+2. Run the Python script:
+
+```bash
+python air_canvas.py
+```
+
+3. The application window will open, displaying the webcam feed and the virtual canvas.
+
+4. Use your hand gestures to draw on the canvas or select different colors.
+
+5. To clear the canvas, hover your finger over the "CLEAR" button on the canvas.
+
+6. To save the canvas drawing, press the "S" key while the application is running.
